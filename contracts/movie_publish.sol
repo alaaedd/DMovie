@@ -21,7 +21,8 @@ contract movie_publish {
     mapping (uint256 => address) file_to_owner;
     mapping (uint256 => uint) file_to_index;
     mapping (address => uint) owner_to_index;
-    mapping (uint256 => uint) movietoken_to_address;
+    mapping (uint256 => uint) movietoken_to_index;
+    mapping (uint256 => address) movietoken_to_owner;
 
     //events
     event MovieTokenPurchased(address sender, address movieOwner);
@@ -53,13 +54,15 @@ contract movie_publish {
     }
 
     function _createMovieToken(address sender, uint256 id, string ownerPkey) private {
-        movietoken token;
+        movietoken memory token;
         movieTokenCounter++;
         token.id = movieTokenCounter;
         file movieFile = files_list[file_to_index[id]];
         token.movie = movieFile;
         token.ownerPkey = ownerPkey;
         movieTokens_list.push(token);
+        movietoken_to_owner[token.id] = sender;
+        movietoken_to_index[token.id] = movieTokens_list.length - 1;
     }    
 
     function _forwardFunds(uint256 id) private {
