@@ -37,6 +37,9 @@ contract movie_publish {
         emit MovieTokenPurchased(msg.sender, file_to_owner[id]);
     }
 
+    //function createMovie()
+    //function addHashToMovieToken()
+
 
     function _validMovie(uint256 id) private view returns(bool){
         if (file_to_owner[id] == address(0)) return false;
@@ -49,7 +52,7 @@ contract movie_publish {
         return true;
     }
 
-    function _createMovieToken(address sender, uint256 id, string ownerPkey){
+    function _createMovieToken(address sender, uint256 id, string ownerPkey) private {
         movietoken token;
         movieTokenCounter++;
         token.id = movieTokenCounter;
@@ -59,7 +62,7 @@ contract movie_publish {
         movieTokens_list.push(token);
     }    
 
-    function _forwardFunds(uint256 id){
+    function _forwardFunds(uint256 id) private {
         file_to_owner[id].transfer(msg.value);
     }
      
