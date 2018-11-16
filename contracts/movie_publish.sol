@@ -9,6 +9,7 @@ contract movie_publish {
     struct file {
         uint256 id;
         string name;
+        string link;
         uint256 price;
     }
     struct movietoken{
@@ -40,12 +41,13 @@ contract movie_publish {
         emit MovieTokenPurchased(msg.sender, file_to_owner[id]);
     }
 
-    function createMovie(string _name, uint256 _price) public {
+    function createMovie(string _name, string _link, uint256 _price) public {
         if (!_exist(msg.sender)) owners_list.push(msg.sender);
         file memory movie;
         movieCounter++;
         movie.id = movieCounter;
         movie.name = _name;
+        movie.link = _link;
         movie.price = _price;
         files_list.push(movie);
         file_to_index[movie.id] = files_list.length-1;
