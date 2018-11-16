@@ -1,5 +1,6 @@
 //solium-disable linebreak-style
 pragma solidity ^0.4.23;
+pragma experimental ABIEncoderV2;
 
 contract movie_publish {
     uint256 movieTokenCounter;
@@ -26,6 +27,7 @@ contract movie_publish {
 
     //events
     event MovieTokenPurchased(address sender, address movieOwner);
+    event HashReadyToPublish (string movieName, address tokenOwner, string movieHash);
 
     function buyMovieToken(uint256 id, string _ownerPkey) public payable{
         uint256 weiAmount = msg.value;
@@ -61,6 +63,15 @@ contract movie_publish {
         );
     }
 
+    function getMovieList () public view returns (file[]){
+        return files_list;
+    }
+
+    function getMovieDetails (uint256 id) public view returns (file){
+        uint index = file_to_index[id];
+        return files_list[index];
+    }
+
     function _exist(address owner) private view returns(bool) { 
         for (uint i = 0; i < owners_list.length; i++){
             if (owners_list[i] == owner) break;
@@ -68,6 +79,7 @@ contract movie_publish {
         if (i == owners_list.length) return false;
         return true;
     }
+
     function _validMovie(uint256 id) private view returns(bool){
         if (file_to_owner[id] == address(0)) return false;
         return true;
