@@ -38,10 +38,36 @@ contract movie_publish {
         emit MovieTokenPurchased(msg.sender, file_to_owner[id]);
     }
 
-    //function createMovie()
-    //function addHashToMovieToken()
+    function createMovie(string _name, uint256 _price) public {
+        if (!_exist(msg.sender)) owners_list.push(msg.sender);
+        file memory movie;
+        movieCounter++;
+        movie.id = movieCounter;
+        movie.name = _name;
+        movie.price = _price;
+        files_list.push(movie);
+        file_to_index[movie.id] = files_list.length-1;
+        file_to_owner[movie.id] = msg.sender;
 
+    }
 
+    function addHashToMovieToken (uint256 _id, string _hash) public {
+        uint index = movietoken_to_index[_id];
+        movieTokens_list[index].movieHash = _hash;
+        emit HashReadyToPublish(
+            movieTokens_list[index].movie.name,
+            movietoken_to_owner[_id],
+            _hash
+        );
+    }
+
+    function _exist(address owner) private view returns(bool) { 
+        for (uint i = 0; i < owners_list.length; i++){
+            if (owners_list[i] == owner) break;
+        }
+        if (i == owners_list.length) return false;
+        return true;
+    }
     function _validMovie(uint256 id) private view returns(bool){
         if (file_to_owner[id] == address(0)) return false;
         return true;
