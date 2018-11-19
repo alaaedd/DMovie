@@ -12,6 +12,7 @@ contract movie_publish {
         string name;
         string link;
         uint256 price;
+        uint downloads;
     }
     struct movietoken{
         uint256 id;
@@ -55,7 +56,6 @@ contract movie_publish {
         file_to_index[movie.id] = files_list.length-1;
         file_to_owner[movie.id] = msg.sender;
         emit MovieAdded(movie.id, msg.sender, movie.name);
-
     }
 
     function addHashToMovieToken (uint256 _id, string _hash) public {
@@ -66,6 +66,15 @@ contract movie_publish {
             movietoken_to_owner[_id],
             _hash
         );
+    }
+
+    function getOwnMovies () public view returns (file[]) {
+        file[] storage ownMovies;
+        for (uint i; i < files_list.length; i++){
+            if (file_to_owner[files_list[i].id] == msg.sender)
+            ownMovies.push(files_list[i]);
+        }
+        return ownMovies;
     }
 
     function getMovieList () public view returns (file[]){
@@ -101,6 +110,7 @@ contract movie_publish {
         movieTokenCounter++;
         token.id = movieTokenCounter;
         file movieFile = files_list[file_to_index[id]];
+        movieFile.downloads ++;
         token.movie = movieFile;
         token.ownerPkey = ownerPkey;
         movieTokens_list.push(token);
