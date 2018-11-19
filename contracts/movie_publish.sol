@@ -6,6 +6,7 @@ contract movie_publish {
     uint256 movieTokenCounter;
     uint256 movieCounter; 
     address[] owners_list;
+
     struct file {
         uint256 id;
         string name;
@@ -29,6 +30,7 @@ contract movie_publish {
     //events
     event MovieTokenPurchased(address sender, address movieOwner);
     event HashReadyToPublish (string movieName, address tokenOwner, string movieHash);
+    event MovieAdded (uint256 id, address movieOwner, string name);
 
     function buyMovieToken(uint256 id, string _ownerPkey) public payable{
         uint256 weiAmount = msg.value;
@@ -52,6 +54,7 @@ contract movie_publish {
         files_list.push(movie);
         file_to_index[movie.id] = files_list.length-1;
         file_to_owner[movie.id] = msg.sender;
+        emit MovieAdded(movie.id, msg.sender, movie.name);
 
     }
 
@@ -109,6 +112,4 @@ contract movie_publish {
         file_to_owner[id].transfer(msg.value);
     }
      
-
-
 }
