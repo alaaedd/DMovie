@@ -24,12 +24,13 @@ contract movie_publish {
     movietoken[] movieTokens_list;
     mapping (uint256 => address) file_to_owner;
     mapping (uint256 => uint) file_to_index;
+    mapping (string => uint) name_to_index;
     mapping (address => uint) owner_to_index;
     mapping (uint256 => uint) movietoken_to_index;
     mapping (uint256 => address) movietoken_to_owner;
 
     //events
-    event MovieTokenPurchased(address sender, address movieOwner);
+    event MovieTokenPurchased(address sender, uint256 id);
     event HashReadyToPublish (string movieName, address tokenOwner, string movieHash);
     event MovieAdded (uint256 id, address movieOwner, string name);
 
@@ -39,9 +40,12 @@ contract movie_publish {
             if(_validAmount(id, weiAmount)){
                 _createMovieToken(msg.sender, id, _ownerPkey);
                 _forwardFunds(id);
+                emit MovieTokenPurchased(msg.sender, movieTokens_list[movieTokens_list.length-1].id);
             }
+            else revert("Insuffisant payed amount");
         }
-        emit MovieTokenPurchased(msg.sender, file_to_owner[id]);
+        else revert ("Invalid Movie ID");
+        
     }
 
     function createMovie(string _name, string _link, uint256 _price) public {
@@ -54,6 +58,7 @@ contract movie_publish {
         movie.price = _price;
         files_list.push(movie);
         file_to_index[movie.id] = files_list.length-1;
+        name_to_index[movie.name] = files_list.length-1;
         file_to_owner[movie.id] = msg.sender;
         emit MovieAdded(movie.id, msg.sender, movie.name);
     }
@@ -68,22 +73,35 @@ contract movie_publish {
         );
     }
 
-    function getOwnMovies () public view returns (file[]) {
-        file[] storage ownMovies;
-        for (uint i; i < files_list.length; i++){
+    function getOwnMovies () public view returns (string[]) {
+        string[] storage moviesNames;
+       
+        for (uint i = 0; i < files_list.length; i++){
             if (file_to_owner[files_list[i].id] == msg.sender)
-            ownMovies.push(files_list[i]);
+            moviesNames.push(files_list[i].name);
         }
-        return ownMovies;
+        if (file_to_owner[files_list[files_list.length-1].id] == msg.sender)
+        moviesNames.push(files_list[files_list.length-1].name);
+        return moviesNames;
     }
 
-    function getMovieList () public view returns (file[]){
-        return files_list;
+    function getMovieList () public view returns (string[]){
+        string[] storage moviesNames;
+        for (uint i = 0; i < files_list.length; i++)
+        moviesNames.push(files_list[i].name);
+        moviesNames.push(files_list[files_list.length-1].name);
+        return moviesNames;
     }
 
-    function getMovieDetails (uint256 id) public view returns (file){
-        uint index = file_to_index[id];
-        return files_list[index];
+    function getMovieDetails (string name) public view 
+    returns (uint256 _id,
+             string _name,
+             string _link,
+             uint256 _price,
+             uint _downloads) {
+        uint index = name_to_index[name];
+        file movie = files_list[index];
+        return (movie.id, movie.name, movie.link, movie.price, movie.downloads);
     }
 
     function _exist(address owner) private view returns(bool) { 
