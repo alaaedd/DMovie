@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Movie List</title>
+
+    <link rel="stylesheet" type="text/css" href="main.css">
+    <link rel="shortcut icon" href="">
+
+    <script src="./node_modules/web3/dist/web3.min.js"></script>
+
+</head>
+    <body>
+       <h3 id="accountid"></h3>
+       <div class="container">
+        <h1>Movie List</h1>
+        <img id="loader" src="https://loading.io/spinners/double-ring/lg.double-ring-spinner.gif">
+        <ul id="moviesList">
+        </ul>
+        <input type="button" onclick="location.href='http://localhost:8383/MovieMaker-Client/addMovie.html'" value="Add a movie" />
+       </div>
+        <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+       <script>
+            window.addEventListener('load', async () => {
+    if (typeof web3 !== 'undefined'){ 
+    window.web3 = new Web3(ethereum);
+     try{
+            await ethereum.enable();
+            var account = web3.eth.accounts[0];
+            var accountInterval = setInterval(function() {
+                if (web3.eth.accounts[0] !== account) {
+                    account = web3.eth.accounts[0];
+                    location.reload();
+                    console.log(account);
+                }
+            }, 100);
+        }catch (error){
+        console.log(error.toString());
+    }
+     
+        
+        web3.eth.defaultAccount = account;
+        var MovieContract = web3.eth.contract( [
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "sender",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "name": "movieOwner",
+          "type": "address"
+        }
+      ],
+      "name": "MovieTokenPurchased",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "movieName",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "name": "tokenOwner",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "name": "movieHash",
+          "type": "string"
+        }
+      ],
+      "name": "HashReadyToPublish",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "id",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "movieOwner",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "name": "name",
+          "type": "string"
+        }
+      ],
+      "name": "MovieAdded",
+      "type": "event"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "id",
+          "type": "uint256"
+        },
+        {
+          "name": "_ownerPkey",
+          "type": "string"
+        }
+      ],
+      "name": "buyMovieToken",
+      "outputs": [],
+      "payable": true,
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_name",
+          "type": "string"
+        },
+        {
+          "name": "_link",
+          "type": "string"
+        },
+        {
+          "name": "_price",
+          "type": "uint256"
+        }
+      ],
+      "name": "createMovie",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_id",
+          "type": "uint256"
+        },
+        {
+          "name": "_hash",
+          "type": "string"
+        }
+      ],
+      "name": "addHashToMovieToken",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "getOwnMovies",
+      "outputs": [
+        {
+          "name": "",
+          "type": "string[]"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "getMovieList",
+      "outputs": [
+        {
+          "components": [
+            {
+              "name": "id",
+              "type": "uint256"
+            },
+            {
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "name": "link",
+              "type": "string"
+            },
+            {
+              "name": "price",
+              "type": "uint256"
+            },
+            {
+              "name": "downloads",
+              "type": "uint256"
+            }
+          ],
+          "name": "",
+          "type": "tuple[]"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "id",
+          "type": "uint256"
+        }
+      ],
+      "name": "getMovieDetails",
+      "outputs": [
+        {
+          "components": [
+            {
+              "name": "id",
+              "type": "uint256"
+            },
+            {
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "name": "link",
+              "type": "string"
+            },
+            {
+              "name": "price",
+              "type": "uint256"
+            },
+            {
+              "name": "downloads",
+              "type": "uint256"
+            }
+          ],
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ]);
+  
+  var movie = MovieContract.at('0xf32A0c08B8E38502917b7d41f37B8074A2B232B6');
+  console.log("heeeere");
+  console.log(movie);
+        }
+        
+        
+        $("#accountid").html('Account Address: '+account);
+        console.log(web3.version);
+       
+        
+            console.log("cc");
+            $("#moviesList").hide();
+            $("#loader").show();
+            movie.getOwnMovies(function(error, result){
+                if(!error){
+                $("#loader").hide();
+                var output ='';
+                for (i = 1; i < result.length; i++){
+                    document.getElementById("moviesList").innerHTML +="<li><a id="+i+">"+result[i]+"</a></li>";
+                }
+                
+                for (i=1;i<result.length; i++){
+                    $("#"+i+"").attr("href", "http://localhost:8383/MovieMaker-Client/detailedMovie.html?movie="+result[i]);
+                }
+              
+                $("#moviesList").show();
+            }
+                else 
+                    console.error(error);
+            });
+            console.log("done");
+        
+        
+        
+    });
+       </script>
+    </body>
+</html>

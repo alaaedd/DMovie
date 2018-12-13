@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Upload Movie</title>
+
+    <link rel="stylesheet" type="text/css" href="main.css">
+    <link rel="shortcut icon" href="">
+
+    <script src="./node_modules/web3/dist/web3.min.js"></script>
+
+</head>
+    <body>
+       <h3 id="accountid"></h3>
+    <div class="container">
+
+        <h1>Upload a new film</h1>
+        <h2 id="operation"></h2>
+        <img id="loader" src="https://loading.io/spinners/double-ring/lg.double-ring-spinner.gif">
+        <label for="data" class="col-lg-2 control-label">Token ID:</label>
+        <form>
+        <input id="id" type="text"  required>
+        <label for="data" class="col-lg-2 control-label">Movie Path:</label>
+        <input id="path" type="text" required>
+        <input id="button" type="submit" value="Upload Movie">
+        </form>
+        
+        <h2 id="hash"></h2>
+        <button id="addHash">Add Movie Hash To Token</button>
+        <input type="button" onclick="location.href='http://localhost:8383/MovieMaker-Client/main.html'" value="Main" />
+        <input type="button" onclick="location.href='http://localhost:8383/MovieMaker-Client/movieList.html'" value="Movie List" />
+
+
+    </div>
+       
+       <script src="https://code.jquery.com/jquery-3.3.1.js"></script>
+       <script>
+          
+                $("form").submit(function (e) {
+                    e.preventDefault();
+                    $.ajax({
+                        url: "http://localhost:3000/addfile?path=" + $("#path").val(),
+                        data: {},
+                        type: "GET", // if you want to send data via the "data" property change this to "POST". This can be omitted otherwise
+                        success: function (responseData) {
+                            console.log(responseData);
+                            var res = responseData.split(",")[0].split(":")[1].substr(1).slice(0, -1);
+                            $("#hash").html("Movie File Hash: " + res);
+                            $("#hash").show();
+                        },
+                        error: console.error
+                    });
+                });
+       </script>
+       <script>
+            window.addEventListener('load', async () => {
+    if (typeof web3 !== 'undefined'){ 
+    window.web3 = new Web3(ethereum);
+     try{
+            await ethereum.enable();
+            var account = web3.eth.accounts[0];
+            var accountInterval = setInterval(function() {
+                if (web3.eth.accounts[0] !== account) {
+                    account = web3.eth.accounts[0];
+                    location.reload();
+                    console.log(account);
+                }
+            }, 100);
+        }catch (error){
+        console.log(error.toString());
+    }
+     
+        
+        web3.eth.defaultAccount = account;
+        var MovieContract = web3.eth.contract([
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "sender",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "name": "movieOwner",
+          "type": "address"
+        }
+      ],
+      "name": "MovieTokenPurchased",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "movieName",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "name": "tokenOwner",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "name": "movieHash",
+          "type": "string"
+        }
+      ],
+      "name": "HashReadyToPublish",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "id",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "movieOwner",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "name": "name",
+          "type": "string"
+        }
+      ],
+      "name": "MovieAdded",
+      "type": "event"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "id",
+          "type": "uint256"
+        },
+        {
+          "name": "_ownerPkey",
+          "type": "string"
+        }
+      ],
+      "name": "buyMovieToken",
+      "outputs": [],
+      "payable": true,
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_name",
+          "type": "string"
+        },
+        {
+          "name": "_link",
+          "type": "string"
+        },
+        {
+          "name": "_price",
+          "type": "uint256"
+        }
+      ],
+      "name": "createMovie",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_id",
+          "type": "uint256"
+        },
+        {
+          "name": "_hash",
+          "type": "string"
+        }
+      ],
+      "name": "addHashToMovieToken",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "getOwnMovies",
+      "outputs": [
+        {
+          "name": "",
+          "type": "string[]"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "getMovieList",
+      "outputs": [
+        {
+          "components": [
+            {
+              "name": "id",
+              "type": "uint256"
+            },
+            {
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "name": "link",
+              "type": "string"
+            },
+            {
+              "name": "price",
+              "type": "uint256"
+            },
+            {
+              "name": "downloads",
+              "type": "uint256"
+            }
+          ],
+          "name": "",
+          "type": "tuple[]"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "name",
+          "type": "string"
+        }
+      ],
+      "name": "getMovieDetails",
+      "outputs": [
+        {
+          "name": "_id",
+          "type": "uint256"
+        },
+        {
+          "name": "_name",
+          "type": "string"
+        },
+        {
+          "name": "_link",
+          "type": "string"
+        },
+        {
+          "name": "_price",
+          "type": "uint256"
+        },
+        {
+          "name": "_downloads",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ]);
+  
+  var movie = MovieContract.at('0xf32A0c08B8E38502917b7d41f37B8074A2B232B6');
+  console.log(movie);
+        }
+        
+        
+        $("#accountid").html('Account Address: '+account);
+        var HashEvent = movie.HashReadyToPublish();
+        $("#addHash").click(function() {
+            $("#operation").hide();
+            $("#hash").hide();
+            $("#id").hide();
+            $("#loader").show();
+            movie.createMovie($("#name").val(), $("#link").val(), $("#price").val(), function(error, result){
+                if(!error){
+                    console.log(JSON.stringify(result));
+                    CreationEvent.watch(function(error, result){
+            if (!error){
+                $("#loader").hide();
+                 $("#operation").html('Movie Added');
+                $("#movieID").html('Movie ID: '+result.args.id);
+                $("#movieName").html('Movie Name: '+result.args.name);
+                 $("#movieOwner").html('Movie Owner: '+result.args.movieOwner);
+                $("#movieID").show();
+                $("#movieName").show();
+                $("#operation").show();
+                 $("#movieOwner").show();
+            }
+        });
+                }
+                
+                else 
+                    console.error(error);
+            });
+            console.log("done");
+
+            
+        });
+        
+        
+    });
+       </script>
+    </body>
+</html>

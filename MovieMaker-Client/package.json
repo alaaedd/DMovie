@@ -1,0 +1,22 @@
+{
+  "name": "moviemaker-client",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Alaeddine Chouchane",
+  "license": "ISC",
+  "dependencies": {
+    "aes": "^0.1.0",
+    "bitcore-ecies": "^1.0.3",
+    "bitcore-lib": "^0.16.0",
+    "crypto.js": "^1.1.5",
+    "elliptic": "^6.4.1",
+    "eth-crypto": "^1.2.7",
+    "express": "^4.16.4",
+    "fs": "0.0.1-security",
+    "web3": "github:ethereum/web3.js"
+  }
+}
