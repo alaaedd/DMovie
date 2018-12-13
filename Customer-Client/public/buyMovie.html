@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>Purchase</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" type="text/css" href="main.css">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <link rel="shortcut icon" href="">
+        <script src="./node_modules/web3/dist/web3.min.js"></script>
+
+
+    </head>
+    <body>
+        <h3 id="accountid"></h3>
+        <div class="container">
+            <h3 id="movieId"></h3> 
+            <h3 id="movieName"></h3>
+            <h3 id="moviePrice"></h3>
+            <img id="loader" src="https://loading.io/spinners/double-ring/lg.double-ring-spinner.gif">
+
+            <h2 id="message">Insert your wallet private key to finalize your purchase:</h2>
+            <form>
+                <input type="text" id="privateKey" required="Required">
+                <input type="submit" id="send" value="Generate Public Key">
+            </form>
+            <h3 id="publicKey"></h3>
+            <h1 id="result"></h1>
+            <input type="button" id="buy" value="Finalize Purchase">
+            <input type="button" id="cancel" onclick="location.href = 'http://localhost:8383/Customer-Client/public/movieList.html'" value="Cancel" />
+
+        </div>
+        <script src="https://code.jquery.com/jquery-3.3.1.js"></script>
+        <script src="./require.js"></script>
+        <script>
+                $("#publicKey").hide();
+                $("form").submit(function (e) {
+                    e.preventDefault();
+                    console.log($("#privateKey").val());
+                    $.ajax({
+                        url: "http://localhost:8181/publicKey?q=" + $("#privateKey").val(),
+                        data: {},
+                        type: "GET", // if you want to send data via the "data" property change this to "POST". This can be omitted otherwise
+                        success: function (responseData) {
+                            console.log(responseData);
+                            $("#publicKey").html("Public Key:" + responseData);
+                            $("#publicKey").show();
+                        },
+                        error: console.error
+                    });
+                });</script>
+        <script>
+            window.addEventListener('load', async () => {
+
+                if (typeof web3 !== 'undefined') {
+                    window.web3 = new Web3(ethereum);
+                    try {
+                        await ethereum.enable();
+                        var account = web3.eth.accounts[0];
+                        var accountInterval = setInterval(function () {
+                            if (web3.eth.accounts[0] !== account) {
+                                account = web3.eth.accounts[0];
+                                location.reload();
+                                console.log(account);
+                            }
+                        }, 100);
+                    } catch (error) {
+                        console.log(error.toString());
+                    }
+
+
+                    web3.eth.defaultAccount = account;
+                    var MovieContract = web3.eth.contract([
+                        {
+                            "anonymous": false,
+                            "inputs": [
+                                {
+                                    "indexed": false,
+                                    "name": "sender",
+                                    "type": "address"
+                                },
+                                {
+                                    "indexed": false,
+                                    "name": "id",
+                                    "type": "uint256"
+                                }
+                            ],
+                            "name": "MovieTokenPurchased",
+                            "type": "event"
+                        },
+                        {
+                            "anonymous": false,
+                            "inputs": [
+                                {
+                                    "indexed": false,
+                                    "name": "movieName",
+                                    "type": "string"
+                                },
+                                {
+                                    "indexed": false,
+                                    "name": "tokenOwner",
+                                    "type": "address"
+                                },
+                                {
+                                    "indexed": false,
+                                    "name": "movieHash",
+                                    "type": "string"
+                                }
+                            ],
+                            "name": "HashReadyToPublish",
+                            "type": "event"
+                        },
+                        {
+                            "anonymous": false,
+                            "inputs": [
+                                {
+                                    "indexed": false,
+                                    "name": "id",
+                                    "type": "uint256"
+                                },
+                                {
+                                    "indexed": false,
+                                    "name": "movieOwner",
+                                    "type": "address"
+                                },
+                                {
+                                    "indexed": false,
+                                    "name": "name",
+                                    "type": "string"
+                                }
+                            ],
+                            "name": "MovieAdded",
+                            "type": "event"
+                        },
+                        {
+                            "constant": false,
+                            "inputs": [
+                                {
+                                    "name": "id",
+                                    "type": "uint256"
+                                },
+                                {
+                                    "name": "_ownerPkey",
+                                    "type": "string"
+                                }
+                            ],
+                            "name": "buyMovieToken",
+                            "outputs": [],
+                            "payable": true,
+                            "stateMutability": "payable",
+                            "type": "function"
+                        },
+                        {
+                            "constant": false,
+                            "inputs": [
+                                {
+                                    "name": "_name",
+                                    "type": "string"
+                                },
+                                {
+                                    "name": "_link",
+                                    "type": "string"
+                                },
+                                {
+                                    "name": "_price",
+                                    "type": "uint256"
+                                }
+                            ],
+                            "name": "createMovie",
+                            "outputs": [],
+                            "payable": false,
+                            "stateMutability": "nonpayable",
+                            "type": "function"
+                        },
+                        {
+                            "constant": false,
+                            "inputs": [
+                                {
+                                    "name": "_id",
+                                    "type": "uint256"
+                                },
+                                {
+                                    "name": "_hash",
+                                    "type": "string"
+                                }
+                            ],
+                            "name": "addHashToMovieToken",
+                            "outputs": [],
+                            "payable": false,
+                            "stateMutability": "nonpayable",
+                            "type": "function"
+                        },
+                        {
+                            "constant": true,
+                            "inputs": [],
+                            "name": "getOwnMovies",
+                            "outputs": [
+                                {
+                                    "name": "",
+                                    "type": "string[]"
+                                }
+                            ],
+                            "payable": false,
+                            "stateMutability": "view",
+                            "type": "function"
+                        },
+                        {
+                            "constant": true,
+                            "inputs": [],
+                            "name": "getMovieList",
+                            "outputs": [
+                                {
+                                    "name": "",
+                                    "type": "string[]"
+                                }
+                            ],
+                            "payable": false,
+                            "stateMutability": "view",
+                            "type": "function"
+                        },
+                        {
+                            "constant": true,
+                            "inputs": [
+                                {
+                                    "name": "name",
+                                    "type": "string"
+                                }
+                            ],
+                            "name": "getMovieDetails",
+                            "outputs": [
+                                {
+                                    "name": "_id",
+                                    "type": "uint256"
+                                },
+                                {
+                                    "name": "_name",
+                                    "type": "string"
+                                },
+                                {
+                                    "name": "_link",
+                                    "type": "string"
+                                },
+                                {
+                                    "name": "_price",
+                                    "type": "uint256"
+                                },
+                                {
+                                    "name": "_downloads",
+                                    "type": "uint256"
+                                }
+                            ],
+                            "payable": false,
+                            "stateMutability": "view",
+                            "type": "function"
+                        }
+                    ]);
+                    var movie = MovieContract.at('0xf32A0c08B8E38502917b7d41f37B8074A2B232B6');
+                }
+
+                console.log("done");
+                console.log("here");
+                var PurchaseEvent = movie.MovieTokenPurchased();
+                $("#accountid").html('Account Address: ' + account);
+                $("#movieName").hide();
+                $("#moviePrice").hide();
+                $("#movieId").hide();
+                $("#loader").show();
+                var querystring = window.location.href.split('?')[1];
+                var moviedetails = querystring.split('&');
+                var moviename = moviedetails[0].split('=')[1];
+                var movieprice = moviedetails[1].split('=')[1];
+                var movieid = moviedetails[2].split('=')[1];
+                $("#movieName").html("Name: " + moviename);
+                $("#moviePrice").html("Price: " + movieprice);
+                $("#movieId").html("ID: " + movieid);
+                $("#movieName").show();
+                $("#movieId").show();
+                $("#moviePrice").show();
+                $("#loader").hide();
+                $("#buy").click(function () {
+                    movie.buyMovieToken(movieid, $("#publicKey").val(),
+                            {from: account,
+                                value: movieprice},
+                            function (error, result) {
+                                if (!error) {
+                                    console.log(JSON.stringify(result));
+                                    
+                                } else
+                                    console.error(error);
+                            });
+                            PurchaseEvent.watch(function (error, result) {
+                                        if (!error) {
+                                            $("#buy").hide();
+                                            $("#publicKey").hide();
+                                            $("#privateKey").hide();
+                                            $("#send").hide();
+                                            $("#message").hide();
+                                            $("#cancel").attr('value', 'Movies List');
+                                            $("#result").html("Movie Purchased! Token ID:" + result.args.id);
+                                        }
+                                    });
+                });
+            });
+        </script>
+
+    </body>
+</html>
